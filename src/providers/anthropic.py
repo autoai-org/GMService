@@ -48,7 +48,6 @@ class AnthropicModel(GenerativeModel):
                 payload[key] = value
         
         async with aiohttp.ClientSession(headers=self.headers) as session:
-            print(payload)
             async with session.post(self.endpoint, json=payload) as r:
                 if r.status == 200:
                     try:
