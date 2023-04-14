@@ -1,5 +1,5 @@
 from bson import ObjectId
-from typing import Any, Union, List
+from typing import Any, Union, List, Optional, Literal
 from pydantic import BaseModel, Field
 
 class PyObjectId(ObjectId):
@@ -44,3 +44,13 @@ class ResponseModel(BaseModel):
     output: Union[str, List[str]] = Field(...)
     status: str = Field(...)
     additional: dict = Field(default_factory=dict)
+
+class SingleTurnDialog(BaseModel):
+    role: Literal['USER', 'ASSISTANT'] = Field(...)
+    text: str = Field(...)
+
+class DialogModel(BaseModel):
+    session_id: Optional[str]
+    model: Optional[str]
+    dialogs: List[SingleTurnDialog] = Field(...)
+    body: dict = Field(default_factory=dict)

@@ -36,9 +36,7 @@ class TogetherModel(GenerativeModel):
         payload = {
             "model": self.name,
         }
-        print(args)
         for key, value in args.items():
-            print(key, value)
             payload[key] = value
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.post(self.endpoint, json=payload) as r:

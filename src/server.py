@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from src.providers import models, GenerativeModel
-from src.model import RequestModel, ResponseModel
-
+from src.model import RequestModel, ResponseModel, DialogModel
+from src.shortcuts.chat import chat_shortcut
 app = FastAPI(title="GMService", description="Generative Models as a Service", version="0.1.0")
 
 app.add_middleware(
@@ -36,4 +36,18 @@ async def predict(query: RequestModel):
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": str(err)})
     return res
 
+@app.post("/api/chat", response_description="Chat with a model", response_model=ResponseModel)
+async def chat(query: DialogModel):
+    model_name = query.model
+    if model_name.lower() == "random":
+        import random
+        model = random.choice(models)
+    else:
+        model = next((model for model in models if model.name == model_name), None)
+    if model is None:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"error": "Model not found"})
     
+    res, err = await chat_shortcut(model, query)
+    if err is not None:
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": str(err)})
+    return res
