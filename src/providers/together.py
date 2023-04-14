@@ -1,37 +1,55 @@
 import os
 import aiohttp
 from typing import Any
+from src.model import ResponseModel
 from src.providers._base import GenerativeModel
 
 class TogetherModel(GenerativeModel):
     def __init__(self, name: str, description: str, version="v1"):
+        KEY_PATH = "TOGETHER_APIKEY"
+        headers = {
+            'Authorization': 'Bearer ' + os.environ[KEY_PATH],
+        }
         super().__init__(
             name=name,
-            description=description
+            description=description,
+            prefix='together',
+            version = version,
+            endpoint = "https://api.together.xyz/inference",
+            headers=headers
         )
-        self.prefix='together'
-        self.version = version
-        self.endpoint = "https://api.together.xyz/inference"
-        self.KEY_PATH = "TOGETHER_APIKEY"
-        self.headers = {
-            'Authorization': 'Bearer ' + os.environ[self.KEY_PATH],
+
+    def format_output(self, response: dict):
+        additional_info = {
+            "finish_reason": response['output']['choices'][0]['finish_reason'],
+            "compute_time": response['output']['raw_compute_time'],
+            'type': response['output']['result_type']
         }
-    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return ResponseModel(
+            model = self.name,
+            output = response['output']['choices'][0]['text'],
+            status = response['status'],
+            additional = additional_info
+        )
+
+    async def __call__(self, args) -> Any:
         payload = {
-            "model": self.model,
+            "model": self.name,
         }
-        for key, value in kwargs.items():
+        print(args)
+        for key, value in args.items():
+            print(key, value)
             payload[key] = value
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.post(self.endpoint, json=payload) as r:
                 if r.status == 200:
                     try:
                         res = await r.json()
-                        return res, None
+                        return self.format_output(res), None
                     except Exception as e:
                         return str(e), e
                 else:
-                    return r.status + " " + r.reason, ValueError("Server Error"+r.status + " " + r.reason)
+                    return f"{r.status} {r.reason}", ValueError(f"{r.status} {r.reason}")
 
 together_models = [
     TogetherModel("pythia-openalign", "Pythia OpenAlign", version="2023-04-14"),

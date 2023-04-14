@@ -1,6 +1,6 @@
 from bson import ObjectId
+from typing import Any, Union, List
 from pydantic import BaseModel, Field
-from typing import Any
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -35,3 +35,12 @@ class ChatHistory(BaseModel):
             }
         }
 
+class RequestModel(BaseModel):
+    body: dict = Field(...)
+    model: str = Field(...)
+
+class ResponseModel(BaseModel):
+    model: str = Field(...)
+    output: Union[str, List[str]] = Field(...)
+    status: str = Field(...)
+    additional: dict = Field(default_factory=dict)

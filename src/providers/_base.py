@@ -1,8 +1,14 @@
 from typing import Any
+from pydantic import BaseModel, Field
 
-class GenerativeModel():
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return super().__call__(*args, **kwds)
+class GenerativeModel(BaseModel):
+    name: str = Field(...)
+    description: str = Field(...)
+    prefix: str = Field(...)
+    version: str = Field(...)
+    endpoint: str = Field(...)
+    headers: dict = Field(default_factory=dict)
+
+    def __call__(self, **kwds: Any) -> Any:
+        raise NotImplementedError
+

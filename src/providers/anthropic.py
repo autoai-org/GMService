@@ -1,36 +1,51 @@
 import os
 import aiohttp
 from typing import Any
+from src.model import ResponseModel
 from src.providers._base import GenerativeModel
 
 class AnthropicModel(GenerativeModel):
     def __init__(self, name: str, description: str, version="v1"):
-        super().__init__(
-            name=name,
-            description=description
-        )
-        self.prefix='anthropic'
-        self.version = version
-        self.endpoint = "https://api.anthropic.com/v1/complete"
-        self.KEY_PATH = "ANTHROPIC_APIKEY"
-        self.headers = {
-            'x-api-key': os.environ[self.KEY_PATH],
+        KEY_PATH = "ANTHROPIC_APIKEY"
+        headers = {
+            'x-api-key': os.environ[KEY_PATH],
             'content-type': 'application/json',
         }
+        super().__init__(
+            name=name,
+            description=description,
+            prefix='anthropic',
+            version = version,
+            endpoint='https://api.anthropic.com/v1/complete',
+            headers=headers
+        )
 
-    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def format_output(self, response: dict):
+        additional_info = {
+            "finish_reason": response['stop_reason'],
+            "compute_time": -1,
+            'type': 'language-model-inference'
+        }
+        return ResponseModel(
+            model = self.name,
+            output = response['completion'],
+            status = 'finished',
+            additional = additional_info
+        )
+
+    async def __call__(self,  **kwargs: Any) -> Any:
         payload = {
             "model": self.model,
         }
         for key, value in kwargs.items():
             payload[key] = value
         
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.post(self.endpoint, json=payload) as r:
                 if r.status == 200:
                     try:
                         res = await r.json()
-                        return res, None
+                        return self.format_output(res), None
                     except Exception as e:
                         return str(e), e
                 else:
