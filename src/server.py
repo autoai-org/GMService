@@ -46,7 +46,6 @@ async def chat(query: DialogModel):
         model = next((model for model in models if model.name == model_name), None)
     if model is None:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"error": "Model not found"})
-    
     res, err = await chat_shortcut(model, query)
     if err is not None:
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": str(err)})

@@ -11,4 +11,3 @@ class GenerativeModel(BaseModel):
 
     def __call__(self, **kwds: Any) -> Any:
         raise NotImplementedError
-
