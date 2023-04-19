@@ -3,6 +3,7 @@ import aiohttp
 from typing import Any
 from src.model import ResponseModel
 from src.providers._base import GenerativeModel
+from src.providers._base import GenerativeModel, MODEL_TYPE
 
 class TogetherModel(GenerativeModel):
     def __init__(self, name: str, description: str, version="v1"):
@@ -16,7 +17,8 @@ class TogetherModel(GenerativeModel):
             prefix='together',
             version = version,
             endpoint = "https://api.together.xyz/inference",
-            headers=headers
+            headers=headers,
+            model_type=MODEL_TYPE.REMOTE_TOGETHER
         )
 
     def format_output(self, response: dict):

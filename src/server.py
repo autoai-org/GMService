@@ -1,11 +1,13 @@
 import os
 from typing import Any
+from loguru import logger
 import motor.motor_asyncio
 from fastapi import FastAPI, Body, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from src.providers import models, GenerativeModel
+
+from src.providers import models, GenerativeModel, GenerativeModelInternal
 from src.model import RequestModel, ResponseModel, DialogModel
 from src.shortcuts.chat import chat_shortcut
 
@@ -18,12 +20,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
-db = client.gmservice
+try:
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGODB_URL", ""))
+    db = client.gmservice
+except Exception as e:
+    logger.error(f"Failed to connect to MongoDB: {e}")
 
 @app.get("/api/models", response_description="List all models", response_model=list[GenerativeModel])
 async def list_models():
+    for model in models:
+        if isinstance(model, GenerativeModelInternal):
+            model = model.dantize()
     return models
 
 @app.post("/api/predict", response_description="Predict response from a model", response_model=ResponseModel)

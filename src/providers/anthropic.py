@@ -2,7 +2,7 @@ import os
 import aiohttp
 from typing import Any
 from src.model import ResponseModel
-from src.providers._base import GenerativeModel
+from src.providers._base import GenerativeModel, MODEL_TYPE
 
 ANTHROPIC_ALIAS = {
     "max_tokens": "max_tokens_to_sample",
@@ -21,7 +21,8 @@ class AnthropicModel(GenerativeModel):
             prefix='anthropic',
             version = version,
             endpoint='https://api.anthropic.com/v1/complete',
-            headers=headers
+            headers=headers,
+            model_type=MODEL_TYPE.REMOTE_ANTHROPIC
         )
 
     def format_output(self, response: dict):

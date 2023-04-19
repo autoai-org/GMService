@@ -1,1 +1,1 @@
-PYTHONPATH=. uvicorn server:app --app-dir ./src
+PYTHONPATH=. uvicorn server:app --app-dir ./src --host 0.0.0.0

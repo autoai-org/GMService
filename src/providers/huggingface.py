@@ -2,9 +2,9 @@ import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import Any
-from src.providers._base import GenerativeModel, MODEL_TYPE
+from src.providers._base import GenerativeModelInternal, MODEL_TYPE
 
-class HuggingFaceCausalLM(GenerativeModel):
+class HuggingFaceCausalLM(GenerativeModelInternal):
     def __init__(self, name: str, description: str, version="v1"):
         super().__init__(
             name=name,
@@ -12,9 +12,9 @@ class HuggingFaceCausalLM(GenerativeModel):
             prefix='huggingface',
             version = version,
             endpoint = "",
+            model_type=MODEL_TYPE.NATIVE_HF
         )
         self.model:AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(name)
-        self.model_type = MODEL_TYPE.NATIVE_HF
 
     async def __call__(self, args) -> Any:
         payload = {}
@@ -41,9 +41,9 @@ huggingface_models = [
         "Pythia OIG Dolly 2000",
         version="v1"
     ),
-    HuggingFaceCausalLM(
-        "../model-mixture/models/pythia-oig-sharegpt-gpt4all-12000/",
-        "Pythia OIG ShareGPT GPT4All 12000",
-        version="v1"
-    )
+    # HuggingFaceCausalLM(
+    #     "../model-mixture/models/pythia-oig-sharegpt-gpt4all-12000/",
+    #     "Pythia OIG ShareGPT GPT4All 12000",
+    #     version="v1"
+    # )
 ]
