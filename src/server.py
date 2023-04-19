@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.providers import models, GenerativeModel
 from src.model import RequestModel, ResponseModel, DialogModel
 from src.shortcuts.chat import chat_shortcut
+
 app = FastAPI(title="GMService", description="Generative Models as a Service", version="0.1.0")
 
 app.add_middleware(

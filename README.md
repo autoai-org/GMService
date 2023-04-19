@@ -1,6 +1,7 @@
-# GMSerive - Generative Models as a Service
+# Generative Models
 
 ## Features
 
 -   [ ] Embedding
 -   [ ] Prediction (text completion)
+-   [ ] Model Soup

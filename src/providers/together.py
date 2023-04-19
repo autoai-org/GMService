@@ -8,7 +8,7 @@ class TogetherModel(GenerativeModel):
     def __init__(self, name: str, description: str, version="v1"):
         KEY_PATH = "TOGETHER_APIKEY"
         headers = {
-            'Authorization': 'Bearer ' + os.environ[KEY_PATH],
+            'Authorization': 'Bearer ' + os.environ.get(KEY_PATH,""),
         }
         super().__init__(
             name=name,

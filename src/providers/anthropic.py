@@ -12,7 +12,7 @@ class AnthropicModel(GenerativeModel):
     def __init__(self, name: str, description: str, version="v1"):
         KEY_PATH = "ANTHROPIC_APIKEY"
         headers = {
-            'x-api-key': os.environ[KEY_PATH],
+            'x-api-key': os.environ.get(KEY_PATH,""),
             'content-type': 'application/json',
         }
         super().__init__(
