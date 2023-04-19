@@ -28,10 +28,13 @@ except Exception as e:
 
 @app.get("/api/models", response_description="List all models", response_model=list[GenerativeModel])
 async def list_models():
+    results = []
     for model in models:
         if isinstance(model, GenerativeModelInternal):
-            model = model.dantize()
-    return models
+            results.append(model.dantize())
+        else:
+            results.append(model)
+    return results
 
 @app.post("/api/predict", response_description="Predict response from a model", response_model=ResponseModel)
 async def predict(query: RequestModel):

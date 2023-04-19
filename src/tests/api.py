@@ -8,7 +8,7 @@ def test_fetch_models():
 
 def test_predict():
     query = {
-        'model': 'pythia-openalign',
+        'model': '../model-mixture/models/pythia-dolly-2000/',
         'body': {
             "prompt": "<human>: hello\n<bot>:",
             "max_tokens": 10,

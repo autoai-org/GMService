@@ -1,7 +1,7 @@
-import os
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import Any
+from src.model import ResponseModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.providers._base import GenerativeModelInternal, MODEL_TYPE
 
 class HuggingFaceCausalLM(GenerativeModelInternal):
@@ -15,16 +15,58 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
             model_type=MODEL_TYPE.NATIVE_HF
         )
         self.model:AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(name)
+        self.model = self.model.half()
+        tokenizer = AutoTokenizer.from_pretrained(name)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = 'left'
+        tokenizer.truncation_side = 'left'
+        self.tokenizer = tokenizer
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.model.to(self.device)
+
+    def format_output(self, response: str):
+        additional_info = {
+            "finish_reason": "length",
+            "compute_time": -1,
+            'type': 'language-model-inference'
+        }
+        return ResponseModel(
+            model = self.name,
+            output = response,
+            status = 'finished',
+            additional = additional_info
+        )
 
     async def __call__(self, args) -> Any:
-        payload = {}
-        payload['prompt'] = args.get('prompt', '')
-        payload['max_tokens'] = args.get('max_tokens', 128)
-        payload['temperature'] = args.get('temperature', 1.0)
-        payload['top_k'] = args.get('top_k', 50)
-        payload['top_p'] = args.get('top_p', 0.95)
-        outputs = self.model.generate(payload['prompt'], max_new_tokens=payload['max_tokens'], do_sample=True, top_k=payload['top_k'], top_p=payload['top_p'], temperature=payload['temperature'])
-    
+        try:
+            payload = {}
+            payload['prompt'] = args.get('prompt', '')
+            payload['max_tokens'] = args.get('max_tokens', 128)
+            payload['temperature'] = args.get('temperature', 1.0)
+            payload['top_k'] = args.get('top_k', 50)
+            payload['top_p'] = args.get('top_p', 0.95)
+            
+            inputs = self.tokenizer(payload['prompt'], padding=True, truncation=True, return_tensors="pt").to(self.device)
+            input_length = inputs.input_ids.shape[1]
+
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=payload['max_tokens'],
+                do_sample=True,
+                top_k=payload['top_k'],
+                top_p=payload['top_p'],
+                temperature=payload['temperature'],
+                return_dict_in_generate=True,
+                output_scores=False, # return logit score
+                output_hidden_states=True,
+            )
+            token = outputs.sequences[0, input_length:]
+            output = self.tokenizer.decode(token)
+            return self.format_output(output), None
+        except Exception as e:
+            return str(e), e
+
     def weighted(self, weight: float) -> None:
         for param in self.model.parameters():
             param.data = param.data * weight
@@ -36,11 +78,11 @@ huggingface_models = [
         "Pythia Dolly 2000",
         version="v1"
     ),
-    HuggingFaceCausalLM(
-        "../model-mixture/models/pythia-oig-dolly-2000/",
-        "Pythia OIG Dolly 2000",
-        version="v1"
-    ),
+    # HuggingFaceCausalLM(
+    #     "../model-mixture/models/pythia-oig-dolly-2000/",
+    #     "Pythia OIG Dolly 2000",
+    #     version="v1"
+    # ),
     # HuggingFaceCausalLM(
     #     "../model-mixture/models/pythia-oig-sharegpt-gpt4all-12000/",
     #     "Pythia OIG ShareGPT GPT4All 12000",
