@@ -2,6 +2,5 @@
 
 ## Features
 
--   [ ] Embedding
 -   [ ] Prediction (text completion)
--   [ ] Model Soup
+-   [ ] Model mixture
