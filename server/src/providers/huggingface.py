@@ -5,7 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.providers._base import GenerativeModelInternal, MODEL_TYPE
 
 class HuggingFaceCausalLM(GenerativeModelInternal):
-    def __init__(self, name: str, description: str, version="v1"):
+    def __init__(self, name: str, description: str, version="v1", model=None, tokenizer=None):
         super().__init__(
             name=name,
             description=description,
@@ -14,16 +14,24 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
             endpoint = "",
             model_type=MODEL_TYPE.NATIVE_HF
         )
-        self.model:AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(name)
-        self.model = self.model.half()
-        tokenizer = AutoTokenizer.from_pretrained(name)
+        if model is None:
+            self.model:AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(name)
+            self.model = self.model.half()
+        if tokenizer is None:
+            tokenizer = AutoTokenizer.from_pretrained(name)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = 'left'
         tokenizer.truncation_side = 'left'
         self.tokenizer = tokenizer
+    
+    def to(self):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
+
+    @classmethod
+    def from_mixed(self, model, name: str, description: str, version: str = "v1"):
+        return HuggingFaceCausalLM(name, description, version=version)
 
     def format_output(self, response: str):
         additional_info = {
@@ -71,18 +79,17 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
         for param in self.model.parameters():
             param.data = param.data * weight
 
-
 huggingface_models = [
     HuggingFaceCausalLM(
-        "../model-mixture/models/pythia-dolly-2000/",
+        "../.cache/models/pythia-dolly-2000/",
         "Pythia Dolly 2000",
         version="v1"
     ),
-    # HuggingFaceCausalLM(
-    #     "../model-mixture/models/pythia-oig-dolly-2000/",
-    #     "Pythia OIG Dolly 2000",
-    #     version="v1"
-    # ),
+    HuggingFaceCausalLM(
+        "../.cache/models/pythia-sharegpt-6000/",
+        "Pythia sharegpt 6000",
+        version="v1"
+    ),
     # HuggingFaceCausalLM(
     #     "../model-mixture/models/pythia-oig-sharegpt-gpt4all-12000/",
     #     "Pythia OIG ShareGPT GPT4All 12000",

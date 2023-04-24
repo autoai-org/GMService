@@ -1,6 +1,5 @@
-# Generative Models
+# Modelsoup
+
+## API Docs
 
 ## Features
-
--   [ ] Prediction (text completion)
--   [ ] Model mixture

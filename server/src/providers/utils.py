@@ -15,11 +15,11 @@ def get_modelsoup(models: List[GenerativeModel], weights: List[float]) -> Genera
     
     if sum(weights) != 1.0:
         raise ValueError("Weights must sum to 1.0")
-    new_model = models[0].copy()
     # zero out the model
-    new_model.weighted(0.0)
     # now calculate the weighted average of the models and assign it to the new model
     for i, model in enumerate(models):
         model.weighted(weights[i])
-        new_model.model = new_model.model + model.model
-    return new_model
+        if i > 0:
+            for param in model.model.parameters():
+                param.data += param.data
+    return models[0]
