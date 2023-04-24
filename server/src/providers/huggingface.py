@@ -17,6 +17,8 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
         if model is None:
             self.model:AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(name)
             self.model = self.model.half()
+        else:
+            self.model = model.half()
         if tokenizer is None:
             tokenizer = AutoTokenizer.from_pretrained(name)
         if tokenizer.pad_token is None:
@@ -24,9 +26,9 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
         tokenizer.padding_side = 'left'
         tokenizer.truncation_side = 'left'
         self.tokenizer = tokenizer
-    
-    def to(self):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    def to(self):
         self.model.to(self.device)
 
     @classmethod

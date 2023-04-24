@@ -8,10 +8,10 @@ def test_fetch_models():
 
 def test_predict():
     query = {
-        'model': '../model-mixture/models/pythia-dolly-2000/',
+        'model': 'mix_0.5 * ../.cache/models/pythia-dolly-2000/_0.5 * ../.cache/models/pythia-sharegpt-6000/_',
         'body': {
-            "prompt": "<human>: hello\n<bot>:",
-            "max_tokens": 10,
+            "prompt": "<human>: What can you do?\n<bot>:",
+            "max_tokens": 128,
             "temperature": 0.9,
             "top_p": 0.9,
             "n": 1,

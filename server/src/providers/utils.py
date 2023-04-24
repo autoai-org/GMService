@@ -20,6 +20,7 @@ def get_modelsoup(models: List[GenerativeModel], weights: List[float]) -> Genera
     for i, model in enumerate(models):
         model.weighted(weights[i])
         if i > 0:
-            for param in model.model.parameters():
-                param.data += param.data
-    return models[0]
+            # add the weights to model 0
+            for param0, param in zip(models[0].model.parameters(),model.model.parameters()):
+                param0.data += param.data
+    return models[0].model

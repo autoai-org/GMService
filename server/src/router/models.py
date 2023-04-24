@@ -1,17 +1,17 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi import status
-
-from src.providers import models, GenerativeModel, GenerativeModelInternal
+from src.providers import GenerativeModel, GenerativeModelInternal
+from src.providers.huggingface import huggingface_models
 from src.model import RequestModel, ResponseModel, DialogModel
 from src.shortcuts.chat import chat_shortcut
 
 router = APIRouter()
-
+models = huggingface_models
 @router.get("/api/models", response_description="List all models", response_model=list[GenerativeModel])
 async def list_models():
     results = []
-    for model in models:
+    for model in huggingface_models:
         if isinstance(model, GenerativeModelInternal):
             results.append(model.dantize())
         else:
