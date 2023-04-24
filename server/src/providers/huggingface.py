@@ -83,8 +83,8 @@ class HuggingFaceCausalLM(GenerativeModelInternal):
 
 huggingface_models = [
     HuggingFaceCausalLM(
-        "../.cache/models/pythia-dolly-2000/",
-        "Pythia Dolly 2000",
+        "../.cache/models/pythia-gpt4all-6000/",
+        "Pythia gpt4all 6000",
         version="v1"
     ),
     HuggingFaceCausalLM(
@@ -92,9 +92,9 @@ huggingface_models = [
         "Pythia sharegpt 6000",
         version="v1"
     ),
-    # HuggingFaceCausalLM(
-    #     "../model-mixture/models/pythia-oig-sharegpt-gpt4all-12000/",
-    #     "Pythia OIG ShareGPT GPT4All 12000",
-    #     version="v1"
-    # )
+    HuggingFaceCausalLM(
+        "../model-mixture/models/pythia-sharegpt-gpt4all-12000/",
+        "Pythia OIG ShareGPT GPT4All 12000",
+        version="v1"
+    )
 ]
