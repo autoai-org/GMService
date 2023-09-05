@@ -3,6 +3,7 @@ import aiohttp
 from typing import Any
 from src.model import ResponseModel
 from src.providers._base import GenerativeModel, MODEL_TYPE
+from litellm import completion 
 
 ANTHROPIC_ALIAS = {
     "max_tokens": "max_tokens_to_sample",
@@ -48,16 +49,7 @@ class AnthropicModel(GenerativeModel):
             else:
                 payload[key] = value
         
-        async with aiohttp.ClientSession(headers=self.headers) as session:
-            async with session.post(self.endpoint, json=payload) as r:
-                if r.status == 200:
-                    try:
-                        res = await r.json()
-                        return self.format_output(res), None
-                    except Exception as e:
-                        return str(e), e
-                else:
-                    return f"{r.status} {r.reason}", ValueError(f"{r.status} {r.reason}")
+        return completion(model=self.name, messages=[{"role": "user", "content": "Hello world"}], api_key=payload[key])
 
 anthropic_models = [
     AnthropicModel(
